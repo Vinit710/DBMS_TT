@@ -81,7 +81,8 @@ export default function TYATimetable() {
         alert('Entry added successfully!');
         fetchTimetable(); // Refresh the timetable data
       } else {
-        alert('Failed to add entry');
+        const errorData = await response.json();
+        alert(`Failed to add entry: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error adding entry:', error);
