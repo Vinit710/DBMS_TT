@@ -7,7 +7,7 @@ export default function HomePage() {
     { name: "Second Year A", route: "sya" },
     { name: "Second Year B", route: "syb" },
     { name: "Third Year A", route: "tya/teachers" },
-    { name: "Third Year B", route: "tyb" },
+    { name: "Third Year B", route: "tyb/teachers" },
     { name: "Fourth Year A", route: "fya" },
     { name: "Fourth Year B", route: "fyb" },
   ]
