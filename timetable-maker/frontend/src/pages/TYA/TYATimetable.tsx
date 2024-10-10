@@ -1,113 +1,136 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from 'react';
 import { Button } from "../../components/ui/button"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 
 interface Teacher {
-  _id: string
-  name: string
-  subject: string
-  class: string
+  _id: string;
+  name: string;
+  subject: string;
+  class: string;
 }
 
 interface TimetableEntry {
-  day: string
-  time: string
-  teacher: string
-  room: string
+  _id: string;
+  day: string;
+  time: string;
+  teacher: string;
+  room: string;
 }
 
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-const times = ["8:15 - 9:15", "9:15 - 10:15", "10:30 - 11:30", "11:30 - 12:30", "1:15 - 2:15", "2:15 - 3:15"]
-const rooms = ["509", "512", "506", "508", "507", "502", "505"]
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const times = ["8:15 - 9:15", "9:15 - 10:15", "10:30 - 11:30", "11:30 - 12:30", "1:15 - 2:15", "2:15 - 3:15"];
+const rooms = ["509", "512", "506", "508", "507", "502", "505"];
 
-export default function CreateTimetable() {
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [selectedDay, setSelectedDay] = useState<string>("Monday")
-  const [selectedTime, setSelectedTime] = useState<string>("8:15 - 9:15")
-  const [selectedTeacher, setSelectedTeacher] = useState<string>("")
-  const [selectedRoom, setSelectedRoom] = useState<string>("509")
-  const [newEntry, setNewEntry] = useState<TimetableEntry[]>([])
+export default function TYATimetable() {
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string>("Monday");
+  const [selectedTime, setSelectedTime] = useState<string>("8:15 - 9:15");
+  const [selectedTeacher, setSelectedTeacher] = useState<string>("");
+  const [selectedRoom, setSelectedRoom] = useState<string>("509");
+  const [timetableData, setTimetableData] = useState<TimetableEntry[]>([]);
 
   useEffect(() => {
-    fetchTeachers()
-  }, [])
+    fetchTeachers();
+    fetchTimetable();
+  }, []);
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/teachers/TYA')
-      const data = await response.json()
-      setTeachers(data)
+      const response = await fetch('http://localhost:5000/api/teachers/TYA');
+      const data = await response.json();
+      setTeachers(data);
     } catch (error) {
-      console.error('Error fetching teachers:', error)
+      console.error('Error fetching teachers:', error);
     }
-  }
+  };
 
-  const handleAddEntry = () => {
-    const entry: TimetableEntry = {
+  const fetchTimetable = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/timetable/tya');
+      const data = await response.json();
+      setTimetableData(data);
+    } catch (error) {
+      console.error('Error fetching timetable:', error);
+    }
+  };
+
+  const handleAddEntry = async () => {
+    const entry: Omit<TimetableEntry, '_id'> = {
       day: selectedDay,
       time: selectedTime,
       teacher: selectedTeacher,
       room: selectedRoom
-    }
-    setNewEntry([...newEntry, entry])
-  }
+    };
 
-  const handleSaveTimetable = async () => {
     try {
-      await fetch('http://localhost:5000/api/timetable/tya', {
+      const response = await fetch('http://localhost:5000/api/timetable/tya', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ timetable: newEntry }),
-      })
-      alert('Timetable saved successfully!')
-      setNewEntry([])
+        body: JSON.stringify(entry),
+      });
+
+      if (response.ok) {
+        alert('Entry added successfully!');
+        fetchTimetable(); // Refresh the timetable data
+      } else {
+        alert('Failed to add entry');
+      }
     } catch (error) {
-      console.error('Error saving timetable:', error)
+      console.error('Error adding entry:', error);
     }
-  }
+  };
+
+  const getTimetableCell = (day: string, time: string) => {
+    const entry = timetableData.find(e => e.day === day && e.time === time);
+    if (entry) {
+      return (
+        <div className="p-2 bg-blue-100 rounded">
+          <p className="font-semibold">{entry.teacher}</p>
+          <p className="text-sm">Room: {entry.room}</p>
+        </div>
+      );
+    }
+    return <div className="p-2 bg-gray-100 rounded">-</div>;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 p-8">
-      <h1 className="text-3xl font-bold mb-8 text-center">Create Timetable for TYA</h1>
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-8">
+      <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">TYA Timetable</h1>
 
-      <div className="space-y-4 max-w-4xl mx-auto">
-        {/* Align inputs horizontally with some padding */}
-        <div className="grid grid-cols-4 gap-6 mb-6 items-center bg-white p-6 rounded shadow-lg">
+      <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold mb-6 text-blue-700">Add New Entry</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div>
-            <Label>Day</Label>
+            <Label className="text-gray-700">Day</Label>
             <select
               className="w-full p-2 mt-1 border rounded"
               value={selectedDay}
               onChange={(e) => setSelectedDay(e.target.value)}
             >
               {days.map((day) => (
-                <option key={day} value={day}>
-                  {day}
-                </option>
+                <option key={day} value={day}>{day}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <Label>Time</Label>
+            <Label className="text-gray-700">Time</Label>
             <select
               className="w-full p-2 mt-1 border rounded"
               value={selectedTime}
               onChange={(e) => setSelectedTime(e.target.value)}
             >
               {times.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
+                <option key={time} value={time}>{time}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <Label>Teacher</Label>
+            <Label className="text-gray-700">Teacher</Label>
             <select
               className="w-full p-2 mt-1 border rounded"
               value={selectedTeacher}
@@ -123,47 +146,51 @@ export default function CreateTimetable() {
           </div>
 
           <div>
-            <Label>Room</Label>
+            <Label className="text-gray-700">Room</Label>
             <select
               className="w-full p-2 mt-1 border rounded"
               value={selectedRoom}
               onChange={(e) => setSelectedRoom(e.target.value)}
             >
               {rooms.map((room) => (
-                <option key={room} value={room}>
-                  {room}
-                </option>
+                <option key={room} value={room}>{room}</option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Add entry button */}
-        <div className="flex justify-center">
-          <Button onClick={handleAddEntry} className="bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600">
+        <div className="flex justify-center mt-6">
+          <Button onClick={handleAddEntry} className="bg-blue-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-600 transition duration-300">
             Add Entry
           </Button>
         </div>
+      </div>
 
-        {/* Timetable entries */}
-        <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4">Timetable Entries</h2>
-          <ul className="space-y-2">
-            {newEntry.map((entry, index) => (
-              <li key={index} className="bg-white p-4 rounded shadow-md border border-gray-200">
-                <span className="font-semibold">{entry.day}</span>, {entry.time} - <span className="font-semibold">{entry.teacher}</span> ({entry.room})
-              </li>
+      <div className="mt-12 max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-lg overflow-x-auto">
+        <h2 className="text-2xl font-semibold mb-6 text-blue-700">Current Timetable</h2>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border p-2 bg-gray-100">Time</th>
+              {days.map(day => (
+                <th key={day} className="border p-2 bg-gray-100">{day}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {times.map(time => (
+              <tr key={time}>
+                <td className="border p-2 font-semibold">{time}</td>
+                {days.map(day => (
+                  <td key={`${day}-${time}`} className="border p-2">
+                    {getTimetableCell(day, time)}
+                  </td>
+                ))}
+              </tr>
             ))}
-          </ul>
-        </div>
-
-        {/* Save timetable button */}
-        <div className="flex justify-center mt-6">
-          <Button onClick={handleSaveTimetable} className="bg-green-500 text-white py-2 px-6 rounded-lg shadow-md hover:bg-green-600">
-            Save Timetable
-          </Button>
-        </div>
+          </tbody>
+        </table>
       </div>
     </div>
-  )
+  );
 }
