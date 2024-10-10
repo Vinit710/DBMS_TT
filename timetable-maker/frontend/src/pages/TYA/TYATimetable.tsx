@@ -15,6 +15,7 @@ interface TimetableEntry {
   day: string;
   time: string;
   teacher: string;
+  subject: string;
   room: string;
 }
 
@@ -56,10 +57,14 @@ export default function TYATimetable() {
   };
 
   const handleAddEntry = async () => {
+    const selectedTeacherObj = teachers.find(t => t._id === selectedTeacher);
+    if (!selectedTeacherObj) return;
+
     const entry: Omit<TimetableEntry, '_id'> = {
       day: selectedDay,
       time: selectedTime,
-      teacher: selectedTeacher,
+      teacher: selectedTeacherObj.name,
+      subject: selectedTeacherObj.subject,
       room: selectedRoom
     };
 
@@ -88,7 +93,7 @@ export default function TYATimetable() {
     if (entry) {
       return (
         <div className="p-2 bg-blue-100 rounded">
-          <p className="font-semibold">{entry.teacher}</p>
+          <p className="font-semibold">{entry.teacher} - {entry.subject}</p>
           <p className="text-sm">Room: {entry.room}</p>
         </div>
       );
@@ -97,12 +102,12 @@ export default function TYATimetable() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center text-blue-800">TYA Timetable</h1>
+    <div className="min-h-screen w-full bg-gradient-to-b from-blue-100 to-white p-4 sm:p-8">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-blue-800">TYA Timetable</h1>
 
-      <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-semibold mb-6 text-blue-700">Add New Entry</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <div className="max-w-7xl mx-auto bg-white p-4 sm:p-8 rounded-lg shadow-lg">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-blue-700">Add New Entry</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
           <div>
             <Label className="text-gray-700">Day</Label>
             <select
@@ -138,8 +143,8 @@ export default function TYATimetable() {
             >
               <option value="">Select Teacher</option>
               {teachers.map((teacher) => (
-                <option key={teacher._id} value={teacher.name}>
-                  {teacher.name} ({teacher.subject})
+                <option key={teacher._id} value={teacher._id}>
+                  {teacher.name} - {teacher.subject}
                 </option>
               ))}
             </select>
@@ -166,8 +171,8 @@ export default function TYATimetable() {
         </div>
       </div>
 
-      <div className="mt-12 max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-lg overflow-x-auto">
-        <h2 className="text-2xl font-semibold mb-6 text-blue-700">Current Timetable</h2>
+      <div className="mt-12 max-w-7xl mx-auto bg-white p-4 sm:p-8 rounded-lg shadow-lg overflow-x-auto">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-blue-700">Current Timetable</h2>
         <table className="w-full border-collapse">
           <thead>
             <tr>
